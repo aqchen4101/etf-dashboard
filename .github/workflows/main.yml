@@ -23,12 +23,12 @@ jobs:
     - name: 安裝金融下載套件
       run: pip install yfinance pytz requests pandas
 
-    - name: 執行資料抓取並動態覆蓋網頁
+    - name: 執行資料抓取
       run: python update.py
 
     - name: 自動推送到儲存庫
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
-        git add index.html
-        git diff --quiet && git diff --staged --quiet || (git commit -m "全自動更新當日真實收盤數據" && git push)
+        git add data.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "全自動更新當日真實文字數據" && git push)
