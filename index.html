@@ -7,158 +7,80 @@
     <link href="https://jsdelivr.net" rel="stylesheet">
     <style>
         body { background-color: #121212; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; } 
-        .card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); } 
+        .card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 8px; } 
         .table-dark { background-color: #1e1e1e; --bs-table-bg: #1e1e1e; font-size: 0.95rem; }
         .table th, .table td { padding: 14px 12px !important; vertical-align: middle; }
-        .text-danger { color: #ff4d4d !important; font-weight: bold; } /* 紅色代表台股上漲 */
-        .text-success { color: #00b300 !important; font-weight: bold; } /* 綠色代表台股下跌 */
-        .nav-pills .nav-link { color: #aaa; background-color: #1e1e1e; border: 1px solid #444; padding: 12px 28px; margin-right: 12px; font-weight: bold; font-size: 1.05rem; transition: all 0.2s; }
-        .nav-pills .nav-link.active { background-color: #0d6efd; color: #fff; border-color: #0d6efd; box-shadow: 0 2px 4px rgba(13,110,253,0.4); }
+        .text-danger { color: #ff4d4d !important; font-weight: bold; } 
+        .text-success { color: #00b300 !important; font-weight: bold; } 
+        .nav-tabs { border-bottom: 2px solid #333; }
+        .nav-tabs .nav-link { color: #aaa; border: none; padding: 14px 28px; font-weight: 500; font-size: 1.05rem; background: none; } 
+        .nav-tabs .nav-link.active { background-color: #2a2a2a; color: #fff; border-bottom: 4px solid #0d6efd; border-radius: 6px 6px 0 0; }
         .fs-7 { font-size: 0.88rem; }
         .container { max-width: 1200px; }
     </style>
 </head>
 <body>
     <div class="container py-4">
-        <header class="pb-3 mb-4 border-bottom border-secondary d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+        <header class="pb-3 mb-4 border-bottom border-secondary d-flex justify-content-between align-items-center">
             <h1 class="text-white fs-3 fw-bold">📊 高股息 ETF 盤後動態監控儀表板</h1>
-            <span class="text-muted" id="update-time">正在連線安全金融數據源...</span>
+            <span class="text-muted">最後更新時間：2026/09/13 12:39:57</span>
         </header>
-        
-        <!-- 大盤卡片區 -->
-        <div class="row row-cols-1 row-cols-md-4 g-3 mb-4" id="market-cards-area"></div>
-        
-        <!-- 導覽分頁 Pills 按鈕群，由網頁端獨立切換，100% 絕不重疊 -->
-        <div class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-            <button class="nav-link active" id="btn-00919" data-bs-toggle="pill" type="button" onclick="switchETF('00919')">00919 群益精選高息</button>
-            <button class="nav-link" id="btn-0056" data-bs-toggle="pill" type="button" onclick="switchETF('0056')">0056 元大高股息</button>
-            <button class="nav-link" id="btn-00878" data-bs-toggle="pill" type="button" onclick="switchETF('00878')">00878 國泰永續高股息</button>
-        </div>
-        
-        <!-- 獨立唯一的數據表格 -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white fw-bold fs-5" id="table-title">00919 核心持股盤後行情明細</div>
-            <div class="table-responsive">
-                <table class="table table-dark table-striped table-hover mb-0">
-                    <thead>
-                        <tr style="background-color: #1a1a1a;">
-                            <th>排行</th><th>代號</th><th>股票名稱</th><th>持股權重</th><th>今日收盤</th><th>今日漲跌</th><th>今日成交量</th>
-                        </tr>
-                    </thead>
-                    <tbody id="main-table-body"></tbody>
-                </table>
+        <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">台灣加權指數</h6>
+                <h3 class="fw-bold">46,184.85</h3>
+                <p class="mb-0 fs-7"><span class="text-success">-1.61%</span> | 量 0.0億</p>
             </div>
         </div>
     </div>
-
+    <div class="col">
+        <div class="card text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">00919 群益精選高息</h6>
+                <h3 class="fw-bold">32.48元</h3>
+                <p class="mb-0 fs-7"><span class="text-success">-0.22%</span> | 量 112,659張</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">0056 元大高股息</h6>
+                <h3 class="fw-bold">55.30元</h3>
+                <p class="mb-0 fs-7"><span class="text-success">-0.72%</span> | 量 22,758張</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-white shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted mb-2">00878 國泰永續高股息</h6>
+                <h3 class="fw-bold">34.00元</h3>
+                <p class="mb-0 fs-7"><span class="text-success">-0.44%</span> | 量 33,969張</p>
+            </div>
+        </div>
+    </div></div>
+        
+        <!-- 引入官方標準 Bootstrap 原生分頁切換特效，100% 絕對不會重疊、各司其職 -->
+        <ul class="nav nav-tabs mb-3" id="etfTabs" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active" id="t919-tab" data-bs-toggle="tab" data-bs-target="#p919-panel" type="button" role="tab" aria-selected="true">00919 核心成分股</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="t56-tab" data-bs-toggle="tab" data-bs-target="#p56-panel" type="button" role="tab" aria-selected="false">0056 核心成分股</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="t878-tab" data-bs-toggle="tab" data-bs-target="#p878-panel" type="button" role="tab" aria-selected="false">00878 核心成分股</button></li>
+        </ul>
+        <div class="tab-content" id="etfTabsContent">
+            <div class="tab-pane fade show active" id="p919-panel" role="tabpanel">
+                <div class="card shadow-sm"><div class="table-responsive"><table class="table table-dark table-striped table-hover mb-0"><thead><tr><th>排行</th><th>代號</th><th>股票名稱</th><th>持股權重</th><th>今日收盤</th><th>今日漲跌</th><th>今日成交量</th></tr></thead><tbody><tr><td>01</td><td>2881</td><td><strong>富邦金</strong></td><td class='text-info'>14.97%</td><td>148.50 元</td><td><span class='text-muted fw-bold'>+0.00%</span></td><td>10,487 張</td></tr><tr><td>02</td><td>2882</td><td><strong>國泰金</strong></td><td class='text-info'>12.48%</td><td>110.50 元</td><td><span class='text-muted fw-bold'>+0.00%</span></td><td>15,295 張</td></tr><tr><td>03</td><td>2891</td><td><strong>中信金</strong></td><td class='text-info'>10.12%</td><td>67.10 元</td><td><span class='text-success fw-bold'>-0.30%</span></td><td>22,571 張</td></tr><tr><td>04</td><td>2382</td><td><strong>廣達</strong></td><td class='text-info'>9.96%</td><td>336.50 元</td><td><span class='text-danger fw-bold'>+0.15%</span></td><td>10,851 張</td></tr><tr><td>05</td><td>2887</td><td><strong>台新金</strong></td><td class='text-info'>8.85%</td><td>42.65 元</td><td><span class='text-danger fw-bold'>+1.19%</span></td><td>41,292 張</td></tr><tr><td>06</td><td>2357</td><td><strong>華碩</strong></td><td class='text-info'>5.92%</td><td>924.00 元</td><td><span class='text-success fw-bold'>-6.57%</span></td><td>5,620 張</td></tr><tr><td>07</td><td>2883</td><td><strong>凱基金</strong></td><td class='text-info'>5.40%</td><td>37.85 元</td><td><span class='text-danger fw-bold'>+1.75%</span></td><td>44,203 張</td></tr><tr><td>08</td><td>2603</td><td><strong>長榮</strong></td><td class='text-info'>3.83%</td><td>234.50 元</td><td><span class='text-danger fw-bold'>+1.52%</span></td><td>8,429 張</td></tr><tr><td>09</td><td>3034</td><td><strong>聯詠</strong></td><td class='text-info'>3.31%</td><td>547.00 元</td><td><span class='text-danger fw-bold'>+0.37%</span></td><td>2,374 張</td></tr><tr><td>10</td><td>2379</td><td><strong>瑞昱</strong></td><td class='text-info'>2.71%</td><td>704.00 元</td><td><span class='text-danger fw-bold'>+1.15%</span></td><td>1,935 張</td></tr></tbody></table></div></div>
+            </div>
+            <div class="tab-pane fade" id="p56-panel" role="tabpanel">
+                <div class="card shadow-sm"><div class="table-responsive"><table class="table table-dark table-striped table-hover mb-0"><thead><tr><th>排行</th><th>代號</th><th>股票名稱</th><th>持股權重</th><th>今日收盤</th><th>今日漲跌</th><th>今日成交量</th></tr></thead><tbody><tr><td>01</td><td>2454</td><td><strong>聯發科</strong></td><td class='text-info'>6.84%</td><td>4585.00 元</td><td><span class='text-success fw-bold'>-2.86%</span></td><td>6,841 張</td></tr><tr><td>02</td><td>2317</td><td><strong>鴻海</strong></td><td class='text-info'>6.12%</td><td>248.00 元</td><td><span class='text-success fw-bold'>-1.20%</span></td><td>23,496 張</td></tr><tr><td>03</td><td>2382</td><td><strong>廣達</strong></td><td class='text-info'>5.52%</td><td>336.50 元</td><td><span class='text-danger fw-bold'>+0.15%</span></td><td>10,851 張</td></tr><tr><td>04</td><td>2303</td><td><strong>聯電</strong></td><td class='text-info'>4.95%</td><td>140.50 元</td><td><span class='text-success fw-bold'>-1.40%</span></td><td>119,261 張</td></tr><tr><td>05</td><td>3231</td><td><strong>緯創</strong></td><td class='text-info'>4.61%</td><td>185.50 元</td><td><span class='text-danger fw-bold'>+0.27%</span></td><td>42,671 張</td></tr><tr><td>06</td><td>2603</td><td><strong>長榮</strong></td><td class='text-info'>4.18%</td><td>234.50 元</td><td><span class='text-danger fw-bold'>+1.52%</span></td><td>8,429 張</td></tr><tr><td>07</td><td>2357</td><td><strong>華碩</strong></td><td class='text-info'>3.95%</td><td>924.00 元</td><td><span class='text-success fw-bold'>-6.57%</span></td><td>5,620 張</td></tr><tr><td>08</td><td>3034</td><td><strong>聯詠</strong></td><td class='text-info'>3.42%</td><td>547.00 元</td><td><span class='text-danger fw-bold'>+0.37%</span></td><td>2,374 張</td></tr><tr><td>09</td><td>2379</td><td><strong>瑞昱</strong></td><td class='text-info'>3.15%</td><td>704.00 元</td><td><span class='text-danger fw-bold'>+1.15%</span></td><td>1,935 張</td></tr><tr><td>10</td><td>3711</td><td><strong>日月光投控</strong></td><td class='text-info'>2.95%</td><td>618.00 元</td><td><span class='text-success fw-bold'>-4.92%</span></td><td>21,541 張</td></tr></tbody></table></div></div>
+            </div>
+            <div class="tab-pane fade" id="p878-panel" role="tabpanel">
+                <div class="card shadow-sm"><div class="table-responsive"><table class="table table-dark table-striped table-hover mb-0"><thead><tr><th>排行</th><th>代號</th><th>股票名稱</th><th>持股權重</th><th>今日收盤</th><th>今日漲跌</th><th>今日成交量</th></tr></thead><tbody><tr><td>01</td><td>2382</td><td><strong>廣達</strong></td><td class='text-info'>6.54%</td><td>336.50 元</td><td><span class='text-danger fw-bold'>+0.15%</span></td><td>10,851 張</td></tr><tr><td>02</td><td>2301</td><td><strong>光寶科</strong></td><td class='text-info'>5.22%</td><td>277.00 元</td><td><span class='text-success fw-bold'>-4.81%</span></td><td>20,733 張</td></tr><tr><td>03</td><td>2324</td><td><strong>仁寶</strong></td><td class='text-info'>4.81%</td><td>37.80 元</td><td><span class='text-success fw-bold'>-2.20%</span></td><td>34,215 張</td></tr><tr><td>04</td><td>2891</td><td><strong>中信金</strong></td><td class='text-info'>4.62%</td><td>67.10 元</td><td><span class='text-success fw-bold'>-0.30%</span></td><td>22,571 張</td></tr><tr><td>05</td><td>2886</td><td><strong>兆豐金</strong></td><td class='text-info'>4.25%</td><td>51.70 元</td><td><span class='text-danger fw-bold'>+3.61%</span></td><td>35,648 張</td></tr><tr><td>06</td><td>2882</td><td><strong>國泰金</strong></td><td class='text-info'>4.08%</td><td>110.50 元</td><td><span class='text-muted fw-bold'>+0.00%</span></td><td>15,295 張</td></tr><tr><td>07</td><td>2881</td><td><strong>富邦金</strong></td><td class='text-info'>3.92%</td><td>148.50 元</td><td><span class='text-muted fw-bold'>+0.00%</span></td><td>10,487 張</td></tr><tr><td>08</td><td>2357</td><td><strong>華碩</strong></td><td class='text-info'>3.71%</td><td>924.00 元</td><td><span class='text-success fw-bold'>-6.57%</span></td><td>5,620 張</td></tr><tr><td>09</td><td>3231</td><td><strong>緯創</strong></td><td class='text-info'>3.54%</td><td>185.50 元</td><td><span class='text-danger fw-bold'>+0.27%</span></td><td>42,671 張</td></tr><tr><td>10</td><td>2303</td><td><strong>聯電</strong></td><td class='text-info'>3.38%</td><td>140.50 元</td><td><span class='text-success fw-bold'>-1.40%</span></td><td>119,261 張</td></tr></tbody></table></div></div>
+            </div>
+        </div>
+    </div>
     <script src="https://jsdelivr.net"></script>
-    <script>
-        // 🎯【100% 串接您提供的最新真實成分股名單與真實權重】
-        const holdingsData = {
-            "00919": [
-                {code:"2881", name:"富邦金", weight:14.97}, {code:"2882", name:"國泰金", weight:12.48}, {code:"2891", name:"中信金", weight:10.12}, {code:"2382", name:"廣達", weight:9.96}, {code:"2887", name:"台新金", weight:8.85}, {code:"2357", name:"華碩", weight:5.92}, {code:"2883", name:"凱基金", weight:5.40}, {code:"2603", name:"長榮", weight:3.83}, {code:"3034", name:"聯詠", weight:3.31}, {code:"2379", name:"瑞昱", weight:2.71}
-            ],
-            "0056": [
-                {code:"2454", name:"聯發科", weight:6.84}, {code:"2317", name:"鴻海", weight:6.12}, {code:"2382", name:"廣達", weight:5.24}, {code:"2303", name:"聯電", weight:4.95}, {code:"3231", name:"緯創", weight:4.61}, {code:"2603", name:"長榮", weight:4.18}, {code:"2357", name:"華碩", weight:3.95}, {code:"3034", name:"聯詠", weight:3.42}, {code:"2379", name:"瑞昱", weight:3.15}, {code:"3711", name:"日月光投控", weight:2.88}
-            ],
-            "00878": [
-                {code:"2382", name:"廣達", weight:6.54}, {code:"2301", name:"光寶科", weight:5.22}, {code:"2324", name:"仁寶", weight:4.81}, {code:"2891", name:"中信金", weight:4.42}, {code:"2886", name:"兆豐金", weight:4.25}, {code:"2882", name:"國泰金", weight:4.08}, {code:"2881", name:"富邦金", weight:3.92}, {code:"2357", name:"華碩", weight:3.71}, {code:"3231", name:"緯創", weight:3.54}, {code:"2303", name:"聯電", weight:3.38}
-            ]
-        };
-
-        // 終極安全機制：串接公共開放無阻擋的全球金融數據 JSON 接口
-        async function fetchStock(ticker, isIndex=false) {
-            try {
-                const res = await fetch(`https://yahoo.com{ticker}?interval=1d&range=10d`);
-                const json = await res.json();
-                const quote = json.chart.result.indicators.quote[0];
-                const closes = quote.close.filter(c => c !== null);
-                const volumes = quote.volume.filter(v => v !== null);
-                
-                const close = closes[closes.length - 1];
-                const prev = closes[closes.length - 2];
-                let volume = volumes[volumes.length - 1];
-                
-                // 週末大盤總交易金額缺失補償：強制捕捉最新一個營業工作日的總量
-                if(isIndex && (volume === 0 || !volume || volume < 1000000)) {
-                    volume = volumes[volumes.length - 2] || 385200000000;
-                }
-                return { close, pct: ((close - prev) / prev) * 100, vol: volume };
-            } catch (e) {
-                // 🛠️【強效數據防呆】若週末 API 接口維護斷線，自動代入官方最新週五盤後真實結算行情，確保大盤成交金額絕對不為零
-                if(isIndex) return { close: 22100.50, pct: 1.20, vol: 385200000000 };
-                
-                const baseline = {
-                    "2881": {close:94.30, pct:1.40, vol:24510000}, "2882": {close:65.20, pct:-0.30, vol:18920000},
-                    "2891": {close:36.40, pct:2.10, vol:31200000}, "2382": {close:254.50, pct:0.85, vol:11450000},
-                    "2887": {close:18.40, pct:0.00, vol:15600000}, "2357": {close:485.00, pct:-1.10, vol:4210000},
-                    "2883": {close:16.80, pct:1.35, vol:22140000}, "2603": {close:186.00, pct:-0.50, vol:8900000},
-                    "3034": {close:515.00, pct:2.40, vol:3150000}, "2379": {close:468.00, pct:1.15, vol:2880000},
-                    "2454": {close:1220.00, pct:-0.50, vol:4150000}, "2317": {close:183.50, pct:1.65, vol:35600000},
-                    "2303": {close:52.50, pct:0.10, vol:14200000}, "3231": {close:115.50, pct:-0.45, vol:12100000},
-                    "3711": {close:156.00, pct:1.20, vol:5320000}, "2301": {close:102.50, pct:0.00, vol:5300000},
-                    "2324": {close:34.20, pct:-0.45, vol:9800000}, "2886": {close:39.10, pct:0.25, vol:11500000},
-                    "00919": {close:32.48, pct:-0.22, vol:85420000}, "0056": {close:38.20, pct:-0.15, vol:21400000},
-                    "00878": {close:22.95, pct:0.30, vol:45120000}
-                };
-                return baseline[ticker.split('.')[0]] || { close: 100, pct: 0, vol: 5000000 };
-            }
-        }
-
-        let globalStockDb = {};
-
-        async function initDashboard() {
-            // 每次打開網頁自動抓取您的電腦現在時間，100% 同步強推畫面更新
-            document.getElementById('update-time').innerText = "最後更新時間：" + new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-
-            const marketTickers = [
-                { name: "台灣加權指數", key: "^TWII", isIdx: true },
-                { name: "00919 群益精選高息", key: "00919.TW", isIdx: false },
-                { name: "0056 元大高股息", key: "0056.TW", isIdx: false },
-                { name: "00878 國泰永續高股息", key: "00878.TW", isIdx: false }
-            ];
-            
-            let cardsHtml = "";
-            for (let t of marketTickers) {
-                const d = await fetchStock(t.key, t.isIdx);
-                const sign = d.pct >= 0 ? "+" : "";
-                const color = d.pct > 0 ? "text-danger" : (d.pct < 0 ? "text-success" : "text-muted");
-                const priceFmt = t.isIdx ? d.close.toLocaleString(undefined, {maximumFractionDigits:2}) : d.close.toFixed(2) + "元";
-                const volFmt = t.isIdx ? (d.vol / 100000000).toFixed(1) + "億" : (d.vol / 1000).toLocaleString(undefined, {maximumFractionDigits:0}) + "張";
-                
-                cardsHtml += `
-                    <div class="col">
-                        <div class="card text-white shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted mb-2">${t.name}</h6>
-                                <h3 class="fw-bold">${priceFmt}</h3>
-                                <p class="mb-0 fs-7"><span class="${color}">${sign}${d.pct.toFixed(2)}%</span> | 量 ${volFmt}</p>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-            document.getElementById('market-cards-area').innerHTML = cardsHtml;
-
-            // 批次下載所有真實個股行情
-            const allCodes = new Set();
-            for (let id in holdingsData) {
-                holdingsData[id].forEach(item => allCodes.add(item.code));
-            }
-            
-            for (let code of allCodes) {
-                globalStockDb[code] = await fetchStock(`${code}.TW`, false);
-            }
-
-            switchETF("00919");
-        }
-
-        // 唯一表格操控大腦：按鈕點擊一秒重組，100% 絕不跑位、不混在一起
-        function switchETF(etfId) {
-            document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-            document.getElementById("btn-" + etfId).classList.add("active");
-
-            document.getElementById("table-title").innerText = "🔥 " + etfId + " 正牌持股收盤即時動態行情";
-            
-            const list = holdingsData[etfId];
-            let rowsHtml = "";
-            list.forEach((item, idx) => {
+</body>
+</html>
