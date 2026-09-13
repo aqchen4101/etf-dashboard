@@ -20,22 +20,19 @@
 </head>
 <body>
     <div class="container py-4">
-        <header class="pb-3 mb-4 border-bottom border-secondary d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+        <header class="pb-3 mb-4 border-bottom border-secondary d-flex justify-content-between align-items-center">
             <h1 class="text-white fs-3 fw-bold">📊 高股息 ETF 盤後動態監控儀表板</h1>
-            <span class="text-muted" id="update-time">正在連線安全金融接口...</span>
+            <span class="text-muted" id="page-ut">最後更新時間：__UT_TIME__</span>
         </header>
         
-        <!-- 大盤卡片區 -->
-        <div class="row row-cols-1 row-cols-md-4 g-3 mb-4" id="market-cards-area"></div>
+        <div class="row row-cols-1 row-cols-md-4 g-3 mb-4" id="cards-area"></div>
         
-        <!-- 導覽分頁按鈕 -->
         <div class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-            <button class="nav-link active" id="btn-00919" data-bs-toggle="pill" type="button" onclick="switchETF('00919')">00919 群益精選高息</button>
-            <button class="nav-link" id="btn-0056" data-bs-toggle="pill" type="button" onclick="switchETF('0056')">0056 元大高股息</button>
-            <button class="nav-link" id="btn-00878" data-bs-toggle="pill" type="button" onclick="switchETF('00878')">00878 國泰永續高股息</button>
+            <button class="nav-link active" id="btn-919" data-bs-toggle="pill" type="button" onclick="switchETF('00919')">00919 核心成分股</button>
+            <button class="nav-link" id="btn-56" data-bs-toggle="pill" type="button" onclick="switchETF('0056')">0056 核心成分股</button>
+            <button class="nav-link" id="btn-878" data-bs-toggle="pill" type="button" onclick="switchETF('00878')">00878 核心成分股</button>
         </div>
         
-        <!-- 表格容器 -->
         <div class="card shadow-sm">
             <div class="card-header bg-dark text-white fw-bold fs-5" id="table-title">00919 核心持股盤後行情明細</div>
             <div class="table-responsive">
@@ -53,8 +50,7 @@
 
     <script src="https://jsdelivr.net"></script>
     <script>
-        // 🛠️ 【100% 官方最新真實成分股名單校正】
-        const holdingsData = {
+        const holdings = {
             "00919": [
                 {code:"2603", name:"長榮", weight:10.98}, {code:"2303", name:"聯電", weight:8.52}, {code:"2454", name:"聯發科", weight:7.84}, {code:"3034", name:"聯詠", weight:6.92}, {code:"2891", name:"中信金", weight:6.25}, {code:"2379", name:"瑞昱", weight:5.41}, {code:"3231", name:"緯創", weight:4.88}, {code:"3711", name:"日月光投控", weight:4.35}, {code:"2449", name:"京元電子", weight:4.12}, {code:"2382", name:"廣達", weight:3.82}
             ],
@@ -66,96 +62,71 @@
             ]
         };
 
-        async function fetchStock(ticker, isIndex=false) {
-            try {
-                const res = await fetch(`https://yahoo.com{ticker}?interval=1d&range=10d`);
-                const json = await res.json();
-                const quote = json.chart.result.indicators.quote;
-                const closes = quote.close.filter(c => c !== null);
-                const volumes = quote.volume.filter(v => v !== null);
-                
-                const close = closes[closes.length - 1];
-                const prev = closes[closes.length - 2];
-                let volume = volumes[volumes.length - 1];
-                
-                if(isIndex && (volume === 0 || !volume || volume < 1000000)) {
-                    volume = volumes[volumes.length - 2] || 385200000000;
-                }
-                return { close, pct: ((close - prev) / prev) * 100, vol: volume };
-            } catch (e) {
-                if(isIndex) return { close: 46184.85, pct: -1.61, vol: 385200000000 };
-                // 串接真實股市的官方收盤行情兜底防呆
-                const baseline = {
-                    "2603": {close:234.50, pct:1.52, vol:8429000}, "2303": {close:140.50, pct:-1.40, vol:119261000},
-                    "2454": {close:4585.00, pct:-2.86, vol:6841000}, "3034": {close:547.00, pct:0.37, vol:2374000},
-                    "2891": {close:67.10, pct:-0.30, vol:22571000}, "2379": {close:704.00, pct:1.15, vol:1935000},
-                    "3231": {close:185.50, pct:0.27, vol:42671000}, "3711": {close:618.00, pct:-4.92, vol:21541000},
-                    "2449": {close:263.00, pct:-3.13, vol:16992000}, "2382": {close:336.50, pct:0.15, vol:10851000},
-                    "2317": {close:182.50, pct:1.65, vol:35600000}, "2357": {close:480.00, pct:-1.10, vol:4210000},
-                    "2301": {close:102.50, pct:0.00, vol:5300000}, "2324": {close:34.20, pct:-0.45, vol:9800000},
-                    "2886": {close:39.10, pct:0.25, vol:11500000}, "2882": {close:63.50, pct:-0.20, vol:18920000},
-                    "2881": {close:92.10, pct:1.55, vol:24510000}
-                };
-                return baseline[ticker.split('.')[0]] || { close: 100, pct: 0, vol: 5000000 };
-            }
-        }
+        // 🎯 核心特調：Python 會直接把計算好的資料替換塞入這裡，開箱即用！
+        const rawData = __RAW_DATA_JSON__;
 
-        let globalStockDb = {};
-
-        async function initDashboard() {
-            document.getElementById('update-time').innerText = "最後更新時間：" + new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-
-            const marketTickers = [
+        function renderDashboard() {
+            const targets = [
                 { name: "台灣加權指數", key: "^TWII", isIdx: true },
                 { name: "00919 群益精選高息", key: "00919.TW", isIdx: false },
                 { name: "0056 元大高股息", key: "0056.TW", isIdx: false },
                 { name: "00878 國泰永續高股息", key: "00878.TW", isIdx: false }
             ];
-            
             let cardsHtml = "";
-            for (let t of marketTickers) {
-                const d = await fetchStock(t.key, t.isIdx);
+            targets.forEach(c => {
+                let d = rawData[c.key] || { price: 0, pct: 0, vol: 0 };
                 const sign = d.pct >= 0 ? "+" : "";
                 const color = d.pct > 0 ? "text-danger" : (d.pct < 0 ? "text-success" : "text-muted");
-                const priceFmt = t.isIdx ? d.close.toLocaleString(undefined, {maximumFractionDigits:2}) : d.close.toFixed(2) + "元";
-                const volFmt = t.isIdx ? (d.vol / 100000000).toFixed(1) + "億" : (d.vol / 1000).toLocaleString(undefined, {maximumFractionDigits:0}) + "張";
+                const pFmt = c.isIdx ? d.price.toLocaleString(undefined, {maximumFractionDigits:2}) : d.price.toFixed(2) + "元";
+                const volFmt = c.isIdx ? (d.vol / 100000000).toFixed(1) + "億" : (d.vol / 1000).toLocaleString(undefined, {maximumFractionDigits:0}) + "張";
                 
                 cardsHtml += `
                     <div class="col">
                         <div class="card text-white shadow-sm">
                             <div class="card-body">
-                                <h6 class="text-muted mb-2">${t.name}</h6>
-                                <h3 class="fw-bold">${priceFmt}</h3>
+                                <h6 class="text-muted mb-2">${c.name}</h6>
+                                <h3 class="fw-bold">${pFmt}</h3>
                                 <p class="mb-0 fs-7"><span class="${color}">${sign}${d.pct.toFixed(2)}%</span> | 量 ${volFmt}</p>
                             </div>
                         </div>
                     </div>`;
-            }
-            document.getElementById('market-cards-area').innerHTML = cardsHtml;
-
-            const allCodes = new Set();
-            for (let id in holdingsData) {
-                holdingsData[id].forEach(item => allCodes.add(item.code));
-            }
-            
-            for (let code of allCodes) {
-                globalStockDb[code] = await fetchStock(`${code}.TW`, false);
-            }
-
+            });
+            document.getElementById('cards-area').innerHTML = cardsHtml;
             switchETF("00919");
         }
 
         function switchETF(etfId) {
             document.querySelectorAll(".nav-link").forEach(b => b.classList.remove("active"));
-            document.getElementById("btn-" + etfId).classList.add("active");
+            if(etfId === "00919") document.getElementById("btn-919").classList.add("active");
+            if(etfId === "0056") document.getElementById("btn-56").classList.add("active");
+            if(etfId === "00878") document.getElementById("btn-878").classList.add("active");
 
-            document.getElementById("table-title").innerText = "🔥 " + etfId + " 核心持股收盤動態行情監控";
+            document.getElementById("table-title").innerText = "🔥 " + etfId + " 核心持股收盤動態行情明細";
             
-            const list = holdingsData[etfId];
+            const list = holdings[etfId];
             let rowsHtml = "";
             list.forEach((item, idx) => {
-                const d = globalStockDb[item.code] || { close: 0, pct: 0, vol: 0 };
+                let d = rawData[item.code] || { price: 0, pct: 0, vol: 0 };
                 const sign = d.pct >= 0 ? "+" : "";
                 const color = d.pct > 0 ? "text-danger" : (d.pct < 0 ? "text-success" : "text-muted");
-                const priceTxt = d.close > 0 ? d.close.toFixed(2) + " 元" : "休市中";
-                const changeTxt = d.close > 0 ? `<span class="${color} fw-bold">${sign}${d.pct.toFixed(2)}%</span>` : "---";
+                const priceTxt = d.price > 0 ? d.price.toFixed(2) + " 元" : "休市中";
+                const changeTxt = d.price > 0 ? `<span class="${color} fw-bold">${sign}${d.pct.toFixed(2)}%</span>` : "---";
+                const volTxt = d.price > 0 ? (d.vol / 1000).toLocaleString(undefined, {maximumFractionDigits:0}) + " 張" : "---";
+                
+                rowsHtml += `<tr>
+                    <td>${(idx+1).toString().padStart(2, '0')}</td>
+                    <td>${item.code}</td>
+                    <td><strong>${item.name}</strong></td>
+                    <td class="text-info">${item.weight.toFixed(2)}%</td>
+                    <td>${priceTxt}</td>
+                    <td>${changeTxt}</td>
+                    <td>${volTxt}</td>
+                </tr>`;
+            });
+            document.getElementById("main-table-body").innerHTML = rowsHtml;
+        }
+
+        window.onload = renderDashboard;
+    </script>
+</body>
+</html>
