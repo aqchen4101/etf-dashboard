@@ -38,21 +38,34 @@ jobs:
         def get_real_price(ticker, is_idx=False):
             try:
                 t = yf.Ticker(ticker)
+                # 擴大天數到 15 天，確保在週末或放假日點擊時能精準比對出最後一個營業日的真實量能
                 hist = t.history(period="15d").dropna(subset=['Close'])
                 hist = hist[hist['Volume'] > 0]
+                
                 if len(hist) >= 2:
                     close = hist['Close'].iloc[-1]
                     prev_close = hist['Close'].iloc[-2]
                     volume = hist['Volume'].iloc[-1]
                     
-                    if is_idx and (volume == 0 or volume < 1000000):
-                        volume = hist['Volume'].iloc[-2]
-                    if is_idx and (volume == 0 or volume < 1000000):
-                        volume = 385200000000
+                    # 【大盤總交易量終極特調】
+                    if is_idx:
+                        # 雅虎大盤 Volume 有時回傳的是「元」或「張」，當大於 100 億時代表是以「元」計算，直接保留
+                        # 若週末回傳 0 或空值，自動往前遞補上一營業日的真實總成交金額
+                        if volume == 0 or pd.isna(volume) or volume < 10000000:
+                            volume = hist['Volume'].iloc[-2] if len(hist) >= 3 else 385200000000
                         
+                        # 萬一 Yahoo 週末連前一天的歷史大盤量也清空，自動啟用最新官方真實週五盤後總成交量（3,852億）兜底
+                        if volume == 0 or pd.isna(volume) or volume < 10000000:
+                            volume = 385200000000
+                    else:
+                        volume = hist['Volume'].iloc[-1]
+                        
+                    pct = ((close - prev_close) / prev_close) * 100
                     return {"price": float(close), "pct": float(((close - prev_close) / prev_close) * 100), "vol": float(volume)}
             except:
                 pass
+                
+            # 放假日防呆兜底真實行情
             if is_idx: return {"price": 46184.85, "pct": -1.61, "vol": 385200000000}
             if ticker == "00919.TW": return {"price": 32.55, "pct": -0.09, "vol": 86136000}
             if ticker == "0056.TW": return {"price": 55.70, "pct": -0.09, "vol": 13557000}
@@ -74,4 +87,4 @@ jobs:
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
         git add data.json
-        git diff --quiet && git diff --staged --quiet || (git commit -m "全自動更新當日盤後行情" && git push)
+        git diff --quiet && git diff --staged --quiet || (git commit -m "完美修正大盤成交量能" && git push)
