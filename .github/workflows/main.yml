@@ -23,57 +23,12 @@ jobs:
     - name: 安裝金融下載套件
       run: pip install yfinance pytz requests pandas
 
-    - name: 執行純數據抓取並直接注入網頁
-      shell: python
+    - name: 執行資料抓取並動態覆蓋網頁
+      run: python update.py
+
+    - name: 自動推送到儲存庫
       run: |
-        import yfinance as yf
-        import json
-        from datetime import datetime
-        import pytz
-
-        tw_tz = pytz.timezone('Asia/Taipei')
-        ut_str = datetime.now(tw_tz).strftime('%Y/%m/%d %H:%M:%S')
-
-        def get_real_price(ticker, is_idx=False):
-            try:
-                t = yf.Ticker(ticker)
-                hist = t.history(period="15d").dropna(subset=['Close'])
-                hist = hist[hist['Volume'] > 0]
-                if len(hist) >= 2:
-                    close = hist['Close'].iloc[-1]
-                    prev_close = hist['Close'].iloc[-2]
-                    volume = hist['Volume'].iloc[-1]
-                    if is_idx:
-                        if volume == 0 or volume < 10000000:
-                            volume = hist['Volume'].iloc[-2]
-                        if volume == 0 or volume < 10000000:
-                            volume = 385200000000
-                    else:
-                        volume = hist['Volume'].iloc[-1]
-                    pct = ((close - prev_close) / prev_close) * 100
-                    return {"price": float(close), "pct": float(pct), "vol": float(volume)}
-            except:
-                pass
-            if is_idx: return {"price": 46184.85, "pct": -1.61, "vol": 385200000000}
-            if ticker == "00919.TW": return {"price": 32.55, "pct": -0.09, "vol": 86136000}
-            if ticker == "0056.TW": return {"price": 55.70, "pct": -0.09, "vol": 13557000}
-            if ticker == "00878.TW": return {"price": 34.15, "pct": 0.06, "vol": 23724000}
-            return {"price": 0, "pct": 0, "vol": 0}
-
-        targets = ["^TWII", "00919.TW", "0056.TW", "00878.TW", "2603", "2303", "2454", "3034", "2891", "2379", "3231", "3711", "2449", "2382", "2317", "2357", "2301", "2324", "2886", "2882", "2881"]
-        db = {}
-        for code in targets:
-            sym = code if (code.startswith("^") or code.endswith(".TW")) else f"{code}.TW"
-            db[code] = get_real_price(sym, code == "^TWII")
-
-        # 讀取 index.html 範本，直接把資料活生生塞進代碼中
-        with open("index.html", "r", encoding="utf-8") as f:
-            html = f.read()
-
-        # 精準置換標記文字
-        html = html.replace("__UT_TIME__", ut_str)
-        html = html.replace("__RAW_DATA_JSON__", json.dumps(db, ensure_ascii=False))
-
-        with open("index.html", "w", encoding="utf-8") as f:
-            f.write(html)
-        print("真實數據已成功寫入網頁骨架中！")
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add index.html
+        git diff --quiet && git diff --staged --quiet || (git commit -m "全自動更新當日真實收盤數據" && git push)
