@@ -64,7 +64,7 @@ jobs:
         db = {}
         for code in targets:
             sym = code if (code.startswith("^") or code.endswith(".TW")) else f"{code}.TW"
-            db[code] = get_single_data = get_real_price(sym, code == "^TWII")
+            db[code] = get_real_price(sym, code == "^TWII")
 
         # 讀取 index.html 範本，直接把資料活生生塞進代碼中
         with open("index.html", "r", encoding="utf-8") as f:
